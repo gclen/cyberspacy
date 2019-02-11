@@ -72,13 +72,13 @@ The attributes provided by the URLDetector class are:
 
 The attributes provided by the EmailDetector class are:
 
-======================      ======= ===
+=========================   ======= ===
 ``Token._.is_email_addr``   bool    Whether the token is an email address.
 ``Doc._.has_email_addr``    bool    Whether the document contains an email address.
 ``Doc._.email_addr``        list    ``(index, token)`` tuples of the document's email addresses.
 ``Span._.has_email_addr``   bool    Whether the span contains an email address.
 ``Span._.email_addr``       list    ``(index, token)`` tuples of the span's email addresses.
-======================      ======= ===
+=========================   ======= ===
 
 
 

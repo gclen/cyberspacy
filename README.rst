@@ -3,7 +3,7 @@ cyberspacy: cybersecurity datatypes for spaCy
 
 `spaCy v2.0 <https://spacy.io/usage/v2>`_ extension and pipeline component
 for adding meta data about IPs, email addresses and URLs to ``Doc`` objects.
-Heavily inspired by `spacymoji <https://github.com/ines/spacymoji>`.
+Heavily inspired by `spacymoji <https://github.com/ines/spacymoji>`_.
 
 Installation
 ===============

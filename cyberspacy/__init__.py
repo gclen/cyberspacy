@@ -11,7 +11,21 @@ from .expressions import ipv4_expr, url_expr, email_expr
 
 
 class IPDetector(object):
-    """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects."""
+    """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects.
+    
+        USAGE:
+        >>> import spacy
+        >>> from cyberspacy import IPDetector
+        >>> nlp = spacy.load('en')
+        >>> ip_detector = IPDetector(nlp)
+        >>> nlp.add_pipe(ip_detector, first=True)
+        >>> doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
+        >>> assert doc._.has_ipv4 == True
+        >>> assert doc[0]._.is_ipv4 == False
+        >>> assert doc[6]._.is_ipv4 == True
+        >>> assert len(doc._.ipv4) == 1
+        >>> assert doc._.ipv4[0] == (6, 2.3.4.5)
+    """
     name='ip_detection'
 
     def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4')):
@@ -140,4 +154,8 @@ class EmailDetector(object):
     def iter_email_addr(self, tokens):
         return [(i, t) for i, t in enumerate(tokens) if t._.get(self._is_email_addr)]     
 
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
 

@@ -52,33 +52,33 @@ on custom components and attributes, see the
 
 The attributes provided by the IPDetector class are:
 
-====================== ======= ===
+===================== ======= ===
 ``Token._.is_ipv4``   bool    Whether the token is an IPv4 address.
 ``Doc._.has_ipv4``    bool    Whether the document contains an IPv4 address.
 ``Doc._.ipv4``        list    ``(index, token)`` tuples of the document's IPv4 addresses.
 ``Span._.has_ipv4``   bool    Whether the span contains IPv4 addresses.
 ``Span._.ipv4``       list    ``(index, token)`` tuples of the span's IPv4 addresses.
-====================== ======= ===
+===================== ======= ===
 
 The attributes provided by the URLDetector class are:
 
-====================== ======= ===
+==================== ======= ===
 ``Token._.is_url``   bool    Whether the token is a URL.
 ``Doc._.has_url``    bool    Whether the document contains a URL.
 ``Doc._.url``        list    ``(index, token)`` tuples of the document's URLs.
 ``Span._.has_url``   bool    Whether the span contains a URL.
 ``Span._.url``       list    ``(index, token)`` tuples of the span's URLs.
-====================== ======= ===
+==================== ======= ===
 
 The attributes provided by the EmailDetector class are:
 
-====================== ======= ===
+======================      ======= ===
 ``Token._.is_email_addr``   bool    Whether the token is an email address.
 ``Doc._.has_email_addr``    bool    Whether the document contains an email address.
 ``Doc._.email_addr``        list    ``(index, token)`` tuples of the document's email addresses.
 ``Span._.has_email_addr``   bool    Whether the span contains an email address.
 ``Span._.email_addr``       list    ``(index, token)`` tuples of the span's email addresses.
-====================== ======= ===
+======================      ======= ===
 
 
 

@@ -11,23 +11,23 @@ def nlp():
     return English()
 
 def test_ip_integration(nlp):
-    detector = IPDetector(nlp, force=True)
+    detector = IPDetector(nlp, force_extension=True)
     nlp.add_pipe(detector, last=True)
     assert nlp.pipe_names[-1] == 'ip_detection'
 
 def test_url_integration(nlp):
-    detector = URLDetector(nlp, force=True)
+    detector = URLDetector(nlp, force_extension=True)
     nlp.add_pipe(detector, last=True)
     assert nlp.pipe_names[-1] == 'url_detection'
 
 def test_email_integration(nlp):
-    detector = EmailDetector(nlp, force=True)
+    detector = EmailDetector(nlp, force_extension=True)
     nlp.add_pipe(detector, last=True)
     assert nlp.pipe_names[-1] == 'email_addr_detection'
 
 
 def test_ip_detector(nlp):
-    ip_detector = IPDetector(nlp, force=True)
+    ip_detector = IPDetector(nlp, force_extension=True)
     nlp.add_pipe(ip_detector, first=True)
     doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
     assert doc._.has_ipv4 == True
@@ -39,7 +39,7 @@ def test_ip_detector(nlp):
     assert ipv4_token.text == '2.3.4.5'
 
 def test_url_detector(nlp):
-    url_detector = URLDetector(nlp, force=True)
+    url_detector = URLDetector(nlp, force_extension=True)
     nlp.add_pipe(url_detector, first=True)
     doc = nlp(u'This is a sentence which contains https://example.com as a URL')
     assert doc._.has_url == True
@@ -51,7 +51,7 @@ def test_url_detector(nlp):
     assert url_token.text == 'https://example.com'
 
 def test_email_detector(nlp):
-    email_detector = EmailDetector(nlp, force=True)
+    email_detector = EmailDetector(nlp, force_extension=True)
     nlp.add_pipe(email_detector, first=True)
     doc = nlp(u'This is a sentence which contains test@example.com as an email address')
     assert doc._.has_email_addr == True

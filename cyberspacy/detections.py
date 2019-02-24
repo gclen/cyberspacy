@@ -30,7 +30,7 @@ class IPDetector(object):
     """
     name='ip_detection'
 
-    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force=False):
+    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force_extension=False):
         """Initialise the pipeline component.
 
         nlp (Language): The shared nlp object. Used to initialise the matcher
@@ -39,7 +39,7 @@ class IPDetector(object):
             changed to avoid ID clashes.
         attrs (tuple): Attributes to set on the ._ property. Defaults to
             ('has_ipv4', 'is_ipv4', 'ipv4').
-        force (bool): Force creation of extension objects.
+        force_extension (bool): Force creation of extension objects.
         RETURNS (callable): A spaCy pipeline component.
         """
         self._has_ipv4, self._is_ipv4, self._ipv4 = attrs
@@ -53,11 +53,11 @@ class IPDetector(object):
         
         # Add attributes
         # Need to force since extensions are global by default
-        Doc.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force)
-        Doc.set_extension(self._ipv4, getter=self.iter_ipv4, force=force)
-        Span.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force)
-        Span.set_extension(self._ipv4, getter=self.iter_ipv4, force=force)
-        Token.set_extension(self._is_ipv4, default=False, force=force)
+        Doc.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force_extension)
+        Doc.set_extension(self._ipv4, getter=self.iter_ipv4, force=force_extension)
+        Span.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force_extension)
+        Span.set_extension(self._ipv4, getter=self.iter_ipv4, force=force_extension)
+        Token.set_extension(self._is_ipv4, default=False, force=force_extension)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.
@@ -103,7 +103,7 @@ class URLDetector(object):
     """
     name='url_detection'
 
-    def __init__(self, nlp, pattern_id='URLDetector', attrs=('has_url', 'is_url', 'url'), force=False):
+    def __init__(self, nlp, pattern_id='URLDetector', attrs=('has_url', 'is_url', 'url'), force_extension=False):
         """Initialise the pipeline component.
 
         nlp (Language): The shared nlp object. Used to initialise the matcher
@@ -112,7 +112,7 @@ class URLDetector(object):
             changed to avoid ID clashes.
         attrs (tuple): Attributes to set on the ._ property. Defaults to
             ('has_url', 'is_url', 'url').
-        force (bool): Force creation of extension objects.
+        force_extension (bool): Force creation of extension objects.
         RETURNS (callable): A spaCy pipeline component.
         """
         self._has_url, self._is_url, self._url = attrs
@@ -125,11 +125,11 @@ class URLDetector(object):
         self.matcher.add('url', None, [{url_flag: True}])
         
         # Add attributes
-        Doc.set_extension(self._has_url, getter=self.has_url, force=force)
-        Doc.set_extension(self._url, getter=self.iter_url, force=force)
-        Span.set_extension(self._has_url, getter=self.has_url, force=force)
-        Span.set_extension(self._url, getter=self.iter_url, force=force)
-        Token.set_extension(self._is_url, default=False, force=force)
+        Doc.set_extension(self._has_url, getter=self.has_url, force=force_extension)
+        Doc.set_extension(self._url, getter=self.iter_url, force=force_extension)
+        Span.set_extension(self._has_url, getter=self.has_url, force=force_extension)
+        Span.set_extension(self._url, getter=self.iter_url, force=force_extension)
+        Token.set_extension(self._is_url, default=False, force=force_extension)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.
@@ -174,7 +174,7 @@ class EmailDetector(object):
     """
     name='email_addr_detection'
 
-    def __init__(self, nlp, pattern_id='EmailAddrDetector', attrs=('has_email_addr', 'is_email_addr', 'email_addr'), force=False):
+    def __init__(self, nlp, pattern_id='EmailAddrDetector', attrs=('has_email_addr', 'is_email_addr', 'email_addr'), force_extension=False):
         """Initialise the pipeline component.
 
         nlp (Language): The shared nlp object. Used to initialise the matcher
@@ -183,7 +183,7 @@ class EmailDetector(object):
             changed to avoid ID clashes.
         attrs (tuple): Attributes to set on the ._ property. Defaults to
             ('has_email_addr', 'is_email_addr', 'email_addr').
-        force (bool): Force creation of extension objects.
+        force_extension (bool): Force creation of extension objects.
         RETURNS (callable): A spaCy pipeline component.
         """
         self._has_email_addr, self._is_email_addr, self._email_addr = attrs
@@ -196,11 +196,11 @@ class EmailDetector(object):
         self.matcher.add('email_addr', None, [{email_addr_flag: True}])
         
         # Add attributes
-        Doc.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force)
-        Doc.set_extension(self._email_addr, getter=self.iter_email_addr, force=force)
-        Span.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force)
-        Span.set_extension(self._email_addr, getter=self.iter_email_addr, force=force)
-        Token.set_extension(self._is_email_addr, default=False, force=force)
+        Doc.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force_extension)
+        Doc.set_extension(self._email_addr, getter=self.iter_email_addr, force=force_extension)
+        Span.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force_extension)
+        Span.set_extension(self._email_addr, getter=self.iter_email_addr, force=force_extension)
+        Token.set_extension(self._is_email_addr, default=False, force=force_extension)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.

@@ -225,7 +225,4 @@ class EmailDetector(object):
         return [(i, t) for i, t in enumerate(tokens) if t._.get(self._is_email_addr)]     
 
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
 

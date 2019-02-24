@@ -49,6 +49,7 @@ def test_url_detector(nlp):
     idx, url_token = doc._.url[0]
     assert idx == 6
     assert url_token.text == 'https://example.com'
+    assert url_token.lemma_ == 'example.com'
 
 def test_email_detector(nlp):
     email_detector = EmailDetector(nlp, force_extension=True)
@@ -62,9 +63,17 @@ def test_email_detector(nlp):
     assert idx == 6
     assert url_token.text == 'test@example.com'    
 
+def test_ip_stemming(nlp):
+    ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=3)
+    nlp.add_pipe(ip_detector, first=True)
+    doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
+    idx, ipv4_token = doc._.ipv4[0]
+    assert ipv4_token.lemma_ == '2.3.4'
 
+def test_subnet_range(nlp):
+    with pytest.raises(ValueError):
+        ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=0)
 
-
-
-
+    with pytest.raises(ValueError):
+        ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=5)
 

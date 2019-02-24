@@ -5,9 +5,10 @@ import re
 
 from spacy.tokens import Doc, Span, Token
 from spacy.matcher import Matcher
+from spacy.symbols import ORTH, LEMMA
 
 from .expressions import ipv4_expr, url_expr, email_expr
-
+from .lemmatizer import get_domain, stem_ip_addr
 
 class IPDetector(object):
     """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects.
@@ -30,7 +31,8 @@ class IPDetector(object):
     """
     name='ip_detection'
 
-    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force_extension=False):
+    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force_extension=False,
+                 subnets_to_keep=4):
         """Initialise the pipeline component.
 
         nlp (Language): The shared nlp object. Used to initialise the matcher
@@ -40,10 +42,15 @@ class IPDetector(object):
         attrs (tuple): Attributes to set on the ._ property. Defaults to
             ('has_ipv4', 'is_ipv4', 'ipv4').
         force_extension (bool): Force creation of extension objects.
+        subnets_to_keep (int): Number of subnets to include in lemmatization.
         RETURNS (callable): A spaCy pipeline component.
         """
         self._has_ipv4, self._is_ipv4, self._ipv4 = attrs
         self.matcher = Matcher(nlp.vocab)
+        
+        if (subnets_to_keep < 1) or (subnets_to_keep > 4):
+            raise ValueError('Subnets_to_keep must be in the range 1-4')
+        self.subnets_to_keep = subnets_to_keep
 
         # Add IPv4 rule to matcher
         self._ipv4_re = re.compile(ipv4_expr, re.VERBOSE | re.I | re.UNICODE)
@@ -71,6 +78,7 @@ class IPDetector(object):
             span = doc[start : end]
             for token in span:
                 token._.set(self._is_ipv4, True)
+                token.lemma_ = stem_ip_addr(token.text, self.subnets_to_keep)
             spans.append(span)
 
         return doc
@@ -143,6 +151,7 @@ class URLDetector(object):
             span = doc[start : end]
             for token in span:
                 token._.set(self._is_url, True)
+                token.lemma_ = get_domain(token.text)
             spans.append(span)
 
         return doc

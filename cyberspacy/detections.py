@@ -6,7 +6,7 @@ import re
 from spacy.tokens import Doc, Span, Token
 from spacy.matcher import Matcher
 
-from expressions import ipv4_expr, url_expr, email_expr
+from .expressions import ipv4_expr, url_expr, email_expr
 
 
 class IPDetector(object):
@@ -30,7 +30,18 @@ class IPDetector(object):
     """
     name='ip_detection'
 
-    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4')):
+    def __init__(self, nlp, pattern_id='IPDetector', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force=False):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'IPDetector'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_ipv4', 'is_ipv4', 'ipv4').
+        force (bool): Force creation of extension objects.
+        RETURNS (callable): A spaCy pipeline component.
+        """
         self._has_ipv4, self._is_ipv4, self._ipv4 = attrs
         self.matcher = Matcher(nlp.vocab)
 
@@ -41,11 +52,12 @@ class IPDetector(object):
         self.matcher.add('IPV4', None, [{ipv4_flag: True}])
         
         # Add attributes
-        Doc.set_extension(self._has_ipv4, getter=self.has_ipv4)
-        Doc.set_extension(self._ipv4, getter=self.iter_ipv4)
-        Span.set_extension(self._has_ipv4, getter=self.has_ipv4)
-        Span.set_extension(self._ipv4, getter=self.iter_ipv4)
-        Token.set_extension(self._is_ipv4, default=False)
+        # Need to force since extensions are global by default
+        Doc.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force)
+        Doc.set_extension(self._ipv4, getter=self.iter_ipv4, force=force)
+        Span.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force)
+        Span.set_extension(self._ipv4, getter=self.iter_ipv4, force=force)
+        Token.set_extension(self._is_ipv4, default=False, force=force)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.
@@ -91,7 +103,18 @@ class URLDetector(object):
     """
     name='url_detection'
 
-    def __init__(self, nlp, pattern_id='URLDetector', attrs=('has_url', 'is_url', 'url')):
+    def __init__(self, nlp, pattern_id='URLDetector', attrs=('has_url', 'is_url', 'url'), force=False):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'URLDetector'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_url', 'is_url', 'url').
+        force (bool): Force creation of extension objects.
+        RETURNS (callable): A spaCy pipeline component.
+        """
         self._has_url, self._is_url, self._url = attrs
         self.matcher = Matcher(nlp.vocab)
 
@@ -102,11 +125,11 @@ class URLDetector(object):
         self.matcher.add('url', None, [{url_flag: True}])
         
         # Add attributes
-        Doc.set_extension(self._has_url, getter=self.has_url)
-        Doc.set_extension(self._url, getter=self.iter_url)
-        Span.set_extension(self._has_url, getter=self.has_url)
-        Span.set_extension(self._url, getter=self.iter_url)
-        Token.set_extension(self._is_url, default=False)
+        Doc.set_extension(self._has_url, getter=self.has_url, force=force)
+        Doc.set_extension(self._url, getter=self.iter_url, force=force)
+        Span.set_extension(self._has_url, getter=self.has_url, force=force)
+        Span.set_extension(self._url, getter=self.iter_url, force=force)
+        Token.set_extension(self._is_url, default=False, force=force)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.
@@ -151,7 +174,18 @@ class EmailDetector(object):
     """
     name='email_addr_detection'
 
-    def __init__(self, nlp, pattern_id='EmailAddrDetector', attrs=('has_email_addr', 'is_email_addr', 'email_addr')):
+    def __init__(self, nlp, pattern_id='EmailAddrDetector', attrs=('has_email_addr', 'is_email_addr', 'email_addr'), force=False):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'EmailAddrDetector'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_email_addr', 'is_email_addr', 'email_addr').
+        force (bool): Force creation of extension objects.
+        RETURNS (callable): A spaCy pipeline component.
+        """
         self._has_email_addr, self._is_email_addr, self._email_addr = attrs
         self.matcher = Matcher(nlp.vocab)
 
@@ -162,11 +196,11 @@ class EmailDetector(object):
         self.matcher.add('email_addr', None, [{email_addr_flag: True}])
         
         # Add attributes
-        Doc.set_extension(self._has_email_addr, getter=self.has_email_addr)
-        Doc.set_extension(self._email_addr, getter=self.iter_email_addr)
-        Span.set_extension(self._has_email_addr, getter=self.has_email_addr)
-        Span.set_extension(self._email_addr, getter=self.iter_email_addr)
-        Token.set_extension(self._is_email_addr, default=False)
+        Doc.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force)
+        Doc.set_extension(self._email_addr, getter=self.iter_email_addr, force=force)
+        Span.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force)
+        Span.set_extension(self._email_addr, getter=self.iter_email_addr, force=force)
+        Token.set_extension(self._is_email_addr, default=False, force=force)
 
     def __call__(self, doc):
         """Apply the pipeline component to a `Doc` object.

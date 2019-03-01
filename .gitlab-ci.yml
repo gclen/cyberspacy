@@ -1,0 +1,51 @@
+# Advise GitLab that these environment vars should be loaded from the Variables config.
+variables:
+    PYPI_USER: SECURE
+    PYPI_PASSWORD: SECURE
+
+before_script:
+  - apt-get update
+  - apt-get install -y python3 python3-pip python-virtualenv
+  - virtualenv --no-site-packages -p python3 venv
+  - source venv/bin/activate
+  - pip install wheel
+
+stages:
+  - test
+  - deploy
+  - cleanup
+
+job_deploy:
+  stage: deploy
+  script:
+    - source venv/bin/activate
+    - pip install twine
+    - echo "[pypi]" >> ~/.pypirc
+    - echo "repository=https://upload.pypi.org/legacy/" >> ~/.pypirc
+    - echo "username=" ${PYPI_USER} >> ~/.pypirc
+    - echo "password=" ${PYPI_PASSWORD} >> ~/.pypirc
+    - rm -rf build dist
+    - python setup.py sdist bdist_wheel
+    - twine upload dist/*
+    - echo "" > ~/.pypirc && rm ~/.pypirc  # If the above fails, this won't run.
+  only:
+    - release
+  dependencies:
+    - job_test
+    
+cleanup_pypirc:
+  stage: cleanup
+  when: always   # this is important; run even if preceding stages failed.
+  script:
+    - rm -vf ~/.pypirc  # we don't want to leave these around, but GitLab may clean up anyway.
+  only:
+    - release
+
+job_test:
+  stage: test
+  script:
+    - source venv/bin/activate
+    - pip install pytest-mock
+    - pip install -q .
+    - pytest
+  

@@ -10,7 +10,12 @@ Installation
 
 ``cyberspacy`` requires ``spacy`` v2.0.0 or higher.
 
-PyPI release coming soon.
+pip
+---
+
+.. code:: bash
+
+    pip install cyberspacy
 
 Usage
 ========

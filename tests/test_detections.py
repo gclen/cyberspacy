@@ -4,31 +4,31 @@ from __future__ import unicode_literals
 from spacy.lang.en import English
 import pytest
 
-from cyberspacy import IPDetector, URLDetector, EmailDetector
+from cyberspacy import IPTagger, URLTagger, EmailTagger
 
 @pytest.fixture(scope='function')
 def nlp():
     return English()
 
 def test_ip_integration(nlp):
-    detector = IPDetector(nlp, force_extension=True)
-    nlp.add_pipe(detector, last=True)
-    assert nlp.pipe_names[-1] == 'ip_detection'
+    Tagger = IPTagger(nlp, force_extension=True)
+    nlp.add_pipe(Tagger, last=True)
+    assert nlp.pipe_names[-1] == 'ip_tagger'
 
 def test_url_integration(nlp):
-    detector = URLDetector(nlp, force_extension=True)
-    nlp.add_pipe(detector, last=True)
-    assert nlp.pipe_names[-1] == 'url_detection'
+    Tagger = URLTagger(nlp, force_extension=True)
+    nlp.add_pipe(Tagger, last=True)
+    assert nlp.pipe_names[-1] == 'url_tagger'
 
 def test_email_integration(nlp):
-    detector = EmailDetector(nlp, force_extension=True)
-    nlp.add_pipe(detector, last=True)
-    assert nlp.pipe_names[-1] == 'email_addr_detection'
+    Tagger = EmailTagger(nlp, force_extension=True)
+    nlp.add_pipe(Tagger, last=True)
+    assert nlp.pipe_names[-1] == 'email_addr_tagger'
 
 
-def test_ip_detector(nlp):
-    ip_detector = IPDetector(nlp, force_extension=True)
-    nlp.add_pipe(ip_detector, first=True)
+def test_ip_Tagger(nlp):
+    ip_Tagger = IPTagger(nlp, force_extension=True)
+    nlp.add_pipe(ip_Tagger, first=True)
     doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
     assert doc._.has_ipv4 == True
     assert doc[0]._.is_ipv4 == False
@@ -38,9 +38,9 @@ def test_ip_detector(nlp):
     assert idx == 6
     assert ipv4_token.text == '2.3.4.5'
 
-def test_url_detector(nlp):
-    url_detector = URLDetector(nlp, force_extension=True)
-    nlp.add_pipe(url_detector, first=True)
+def test_url_Tagger(nlp):
+    url_Tagger = URLTagger(nlp, force_extension=True)
+    nlp.add_pipe(url_Tagger, first=True)
     doc = nlp(u'This is a sentence which contains https://example.com as a URL')
     assert doc._.has_url == True
     assert doc[0]._.is_url == False
@@ -51,9 +51,9 @@ def test_url_detector(nlp):
     assert url_token.text == 'https://example.com'
     assert url_token.lemma_ == 'example.com'
 
-def test_email_detector(nlp):
-    email_detector = EmailDetector(nlp, force_extension=True)
-    nlp.add_pipe(email_detector, first=True)
+def test_email_Tagger(nlp):
+    email_Tagger = EmailTagger(nlp, force_extension=True)
+    nlp.add_pipe(email_Tagger, first=True)
     doc = nlp(u'This is a sentence which contains test@example.com as an email address')
     assert doc._.has_email_addr == True
     assert doc[0]._.is_email_addr == False
@@ -64,16 +64,16 @@ def test_email_detector(nlp):
     assert url_token.text == 'test@example.com'    
 
 def test_ip_stemming(nlp):
-    ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=3)
-    nlp.add_pipe(ip_detector, first=True)
+    ip_Tagger = IPTagger(nlp, force_extension=True, subnets_to_keep=3)
+    nlp.add_pipe(ip_Tagger, first=True)
     doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
     idx, ipv4_token = doc._.ipv4[0]
     assert ipv4_token.lemma_ == '2.3.4'
 
 def test_subnet_range(nlp):
     with pytest.raises(ValueError):
-        ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=0)
+        ip_Tagger = IPTagger(nlp, force_extension=True, subnets_to_keep=0)
 
     with pytest.raises(ValueError):
-        ip_detector = IPDetector(nlp, force_extension=True, subnets_to_keep=5)
+        ip_Tagger = IPTagger(nlp, force_extension=True, subnets_to_keep=5)
 

@@ -1,7 +1,13 @@
+import re
+
 from spacy.matcher import Matcher
 from spacy.tokens import Doc, Span, Token
+from spacy.symbols import ORTH, LEMMA
+
+from .expressions import ipv4_expr, url_expr, email_expr
+from .stemmer import get_domain, stem_ip_addr
 from .stemmer import NormalizeWinPath
-import re
+
 
 class CommandLineTagger(object):
     
@@ -145,3 +151,228 @@ class CommandLineTagger(object):
     
     def normalize_cmd(self, tokens):
         return ' '.join([t._.stem for t in tokens])
+
+
+class IPTagger(object):
+    """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects.
+    
+        USAGE:
+        >>> import spacy
+        >>> from spacy.lang.en import English
+        >>> from cyberspacy import IPTagger
+        >>> nlp = English()
+        >>> ip_Tagger = IPTagger(nlp)
+        >>> nlp.add_pipe(ip_Tagger, first=True)
+        >>> doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
+        >>> assert doc._.has_ipv4 == True
+        >>> assert doc[0]._.is_ipv4 == False
+        >>> assert doc[6]._.is_ipv4 == True
+        >>> assert len(doc._.ipv4) == 1
+        >>> idx, ipv4_token = doc._.ipv4[0]
+        >>> assert idx == 6
+        >>> assert ipv4_token.text == '2.3.4.5'
+    """
+    name='ip_tagger'
+
+    def __init__(self, nlp, pattern_id='IPTagger', attrs=('has_ipv4', 'is_ipv4', 'ipv4'), force_extension=False,
+                 subnets_to_keep=4):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'IPTagger'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_ipv4', 'is_ipv4', 'ipv4').
+        force_extension (bool): Force creation of extension objects.
+        subnets_to_keep (int): Number of subnets to include in lemmatization.
+        RETURNS (callable): A spaCy pipeline component.
+        """
+        self._has_ipv4, self._is_ipv4, self._ipv4 = attrs
+        self.matcher = Matcher(nlp.vocab)
+        
+        if (subnets_to_keep < 1) or (subnets_to_keep > 4):
+            raise ValueError('Subnets_to_keep must be in the range 1-4')
+        self.subnets_to_keep = subnets_to_keep
+
+        # Add IPv4 rule to matcher
+        self._ipv4_re = re.compile(ipv4_expr, re.VERBOSE | re.I | re.UNICODE)
+        ipv4_mask = lambda text: bool(self._ipv4_re.match(text))
+        ipv4_flag = nlp.vocab.add_flag(ipv4_mask)
+        self.matcher.add('IPV4', None, [{ipv4_flag: True}])
+        
+        # Add attributes
+        # Need to force since extensions are global by default
+        Doc.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force_extension)
+        Doc.set_extension(self._ipv4, getter=self.iter_ipv4, force=force_extension)
+        Span.set_extension(self._has_ipv4, getter=self.has_ipv4, force=force_extension)
+        Span.set_extension(self._ipv4, getter=self.iter_ipv4, force=force_extension)
+        Token.set_extension(self._is_ipv4, default=False, force=force_extension)
+
+    def __call__(self, doc):
+        """Apply the pipeline component to a `Doc` object.
+
+        doc (Doc): The `Doc` returned by the previous pipeline component.
+        RETURNS (Doc): The modified `Doc` object.
+        """
+        matches = self.matcher(doc)
+        spans = []  # keep spans here to merge them later
+        for match_id, start, end in matches:
+            span = doc[start : end]
+            for token in span:
+                token._.set(self._is_ipv4, True)
+                token.lemma_ = stem_ip_addr(token.text, self.subnets_to_keep)
+            spans.append(span)
+
+        return doc
+
+    def has_ipv4(self, tokens):
+        return any(token._.get(self._is_ipv4) for token in tokens)
+
+    def iter_ipv4(self, tokens):
+        return [(i, t) for i, t in enumerate(tokens) if t._.get(self._is_ipv4)]        
+
+
+class URLTagger(object):
+    """spaCy v2.0 pipeline component for adding URL meta data to `Doc` objects.
+    
+        USAGE:
+        >>> import spacy
+        >>> from spacy.lang.en import English
+        >>> from cyberspacy import URLTagger
+        >>> nlp = English()
+        >>> url_Tagger = URLTagger(nlp)
+        >>> nlp.add_pipe(url_Tagger, first=True)
+        >>> doc = nlp(u'This is a sentence which contains https://example.com as a URL')
+        >>> assert doc._.has_url == True
+        >>> assert doc[0]._.is_url == False
+        >>> assert doc[6]._.is_url == True
+        >>> assert len(doc._.url) == 1
+        >>> idx, url_token = doc._.url[0]
+        >>> assert idx == 6
+        >>> assert url_token.text == 'https://example.com'
+    """
+    name='url_tagger'
+
+    def __init__(self, nlp, pattern_id='URLTagger', attrs=('has_url', 'is_url', 'url'), force_extension=False):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'URLTagger'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_url', 'is_url', 'url').
+        force_extension (bool): Force creation of extension objects.
+        RETURNS (callable): A spaCy pipeline component.
+        """
+        self._has_url, self._is_url, self._url = attrs
+        self.matcher = Matcher(nlp.vocab)
+
+        # Add  URL rule to matcher
+        self._url_re = re.compile(url_expr, re.VERBOSE | re.I | re.UNICODE)
+        url_mask = lambda text: bool(self._url_re.match(text))
+        url_flag = nlp.vocab.add_flag(url_mask)
+        self.matcher.add('url', None, [{url_flag: True}])
+        
+        # Add attributes
+        Doc.set_extension(self._has_url, getter=self.has_url, force=force_extension)
+        Doc.set_extension(self._url, getter=self.iter_url, force=force_extension)
+        Span.set_extension(self._has_url, getter=self.has_url, force=force_extension)
+        Span.set_extension(self._url, getter=self.iter_url, force=force_extension)
+        Token.set_extension(self._is_url, default=False, force=force_extension)
+
+    def __call__(self, doc):
+        """Apply the pipeline component to a `Doc` object.
+
+        doc (Doc): The `Doc` returned by the previous pipeline component.
+        RETURNS (Doc): The modified `Doc` object.
+        """
+        matches = self.matcher(doc)
+        spans = []  # keep spans here to merge them later
+        for match_id, start, end in matches:
+            span = doc[start : end]
+            for token in span:
+                token._.set(self._is_url, True)
+                token.lemma_ = get_domain(token.text)
+            spans.append(span)
+
+        return doc
+
+    def has_url(self, tokens):
+        return any(token._.get(self._is_url) for token in tokens)
+
+    def iter_url(self, tokens):
+        return [(i, t) for i, t in enumerate(tokens) if t._.get(self._is_url)]     
+
+class EmailTagger(object):
+    """spaCy v2.0 pipeline component for adding email address meta data to `Doc` objects.
+    
+        USAGE:
+        >>> import spacy
+        >>> from spacy.lang.en import English
+        >>> from cyberspacy import EmailTagger
+        >>> nlp = English()
+        >>> email_Tagger = EmailTagger(nlp)
+        >>> nlp.add_pipe(email_Tagger, first=True)
+        >>> doc = nlp(u'This is a sentence which contains test@example.com as an email address')
+        >>> assert doc._.has_email_addr == True
+        >>> assert doc[0]._.is_email_addr == False
+        >>> assert doc[6]._.is_email_addr == True
+        >>> assert len(doc._.email_addr) == 1
+        >>> idx, url_token = doc._.email_addr[0]
+        >>> assert idx == 6
+        >>> assert url_token.text == 'test@example.com'
+    """
+    name='email_addr_tagger'
+
+    def __init__(self, nlp, pattern_id='EmailAddrTagger', attrs=('has_email_addr', 'is_email_addr', 'email_addr'), force_extension=False):
+        """Initialise the pipeline component.
+
+        nlp (Language): The shared nlp object. Used to initialise the matcher
+            with the shared `Vocab`, and create `Doc` match patterns.
+        pattern_id (unicode): ID of match pattern, defaults to 'EmailAddrTagger'. Can be
+            changed to avoid ID clashes.
+        attrs (tuple): Attributes to set on the ._ property. Defaults to
+            ('has_email_addr', 'is_email_addr', 'email_addr').
+        force_extension (bool): Force creation of extension objects.
+        RETURNS (callable): A spaCy pipeline component.
+        """
+        self._has_email_addr, self._is_email_addr, self._email_addr = attrs
+        self.matcher = Matcher(nlp.vocab)
+
+        # Add email address rule to matcher
+        self._email_addr_re = re.compile(email_expr, re.VERBOSE | re.I | re.UNICODE)
+        email_addr_mask = lambda text: bool(self._email_addr_re.match(text))
+        email_addr_flag = nlp.vocab.add_flag(email_addr_mask)
+        self.matcher.add('email_addr', None, [{email_addr_flag: True}])
+        
+        # Add attributes
+        Doc.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force_extension)
+        Doc.set_extension(self._email_addr, getter=self.iter_email_addr, force=force_extension)
+        Span.set_extension(self._has_email_addr, getter=self.has_email_addr, force=force_extension)
+        Span.set_extension(self._email_addr, getter=self.iter_email_addr, force=force_extension)
+        Token.set_extension(self._is_email_addr, default=False, force=force_extension)
+
+    def __call__(self, doc):
+        """Apply the pipeline component to a `Doc` object.
+
+        doc (Doc): The `Doc` returned by the previous pipeline component.
+        RETURNS (Doc): The modified `Doc` object.
+        """
+        matches = self.matcher(doc)
+        spans = []  # keep spans here to merge them later
+        for match_id, start, end in matches:
+            span = doc[start : end]
+            for token in span:
+                token._.set(self._is_email_addr, True)
+            spans.append(span)
+
+        return doc
+
+    def has_email_addr(self, tokens):
+        return any(token._.get(self._is_email_addr) for token in tokens)
+
+    def iter_email_addr(self, tokens):
+        return [(i, t) for i, t in enumerate(tokens) if t._.get(self._is_email_addr)]
+

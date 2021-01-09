@@ -29,10 +29,10 @@ anywhere in your pipeline.
 
     import spacy
     from spacy.lang.en import English
-    from cyberspacy import IPDetector
+    from cyberspacy import IPTagger
     nlp = English()
-    ip_detector = IPDetector(nlp)
-    nlp.add_pipe(ip_detector, first=True)
+    ip_Tagger = IPTagger(nlp)
+    nlp.add_pipe(ip_Tagger, first=True)
     doc = nlp(u'This is a sentence which contains 2.3.4.5 as an IP address')
     assert doc._.has_ipv4 == True
     assert doc[0]._.is_ipv4 == False
@@ -55,7 +55,7 @@ change the attribute names on initialisation of the extension. For more details
 on custom components and attributes, see the
 `processing pipelines documentation <https://spacy.io/usage/processing-pipelines#custom-components>`_.
 
-The attributes provided by the IPDetector class are:
+The attributes provided by the IPTagger class are:
 
 ===================== ======= ===
 ``Token._.is_ipv4``   bool    Whether the token is an IPv4 address.
@@ -65,7 +65,7 @@ The attributes provided by the IPDetector class are:
 ``Span._.ipv4``       list    ``(index, token)`` tuples of the span's IPv4 addresses.
 ===================== ======= ===
 
-The attributes provided by the URLDetector class are:
+The attributes provided by the URLTagger class are:
 
 ==================== ======= ===
 ``Token._.is_url``   bool    Whether the token is a URL.
@@ -75,7 +75,7 @@ The attributes provided by the URLDetector class are:
 ``Span._.url``       list    ``(index, token)`` tuples of the span's URLs.
 ==================== ======= ===
 
-The attributes provided by the EmailDetector class are:
+The attributes provided by the EmailTagger class are:
 
 =========================   ======= ===
 ``Token._.is_email_addr``   bool    Whether the token is an email address.

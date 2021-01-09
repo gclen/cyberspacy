@@ -1,5 +1,4 @@
-from .detections import IPDetector, EmailDetector, URLDetector
+from .tagger import IPTagger, EmailTagger, URLTagger, CommandLineTagger
 from .tokenizer import CommandLineTokenizer
-from .tagger import CommandLineTagger
 
 from .about import __version__

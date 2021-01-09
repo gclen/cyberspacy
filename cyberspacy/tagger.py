@@ -3,6 +3,7 @@ import re
 from spacy.matcher import Matcher
 from spacy.tokens import Doc, Span, Token
 from spacy.symbols import ORTH, LEMMA
+from spacy.lang.xx import Language
 
 from .expressions import ipv4_expr, url_expr, email_expr
 from .stemmer import get_domain, stem_ip_addr
@@ -38,6 +39,8 @@ class CommandLineTagger(object):
         self._tokens,\
         self._normalize = attrs
         
+        if nlp is None:
+            nlp = Language()
         self.nlp = nlp
         self.matcher = Matcher(nlp.vocab)
         self.normalizer = NormalizeWinPath(architecture)
@@ -150,8 +153,26 @@ class CommandLineTagger(object):
         return [t._.stem for t in tokens]
     
     def normalize_cmd(self, tokens):
-        return ' '.join([t._.stem for t in tokens])
+        stemmed = []
 
+        for t in tokens:
+            if t._.is_cmd:
+                sub_cmd = self.nlp(self._remove_quotes(t.text))
+                normalized_sub = self._add_quotes(sub_cmd._.normalize)
+                stemmed.append(normalized_sub)
+            else:
+                stemmed.append(t._.stem)
+
+        return ' '.join(stemmed)
+
+    @staticmethod
+    def _remove_quotes(s):
+        if (s[0] == s[-1]) and s.startswith(("'", '"')):
+            return s[1:-1]
+
+    @staticmethod
+    def _add_quotes(s):
+        return f'"{s}"'
 
 class IPTagger(object):
     """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects.

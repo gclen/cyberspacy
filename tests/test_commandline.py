@@ -1,12 +1,13 @@
-from spacy.lang.en import English
+from spacy.lang.xx import Language
 import pytest
 
 from cyberspacy.tokenizer import CommandLineTokenizer
 from cyberspacy.tagger import CommandLineTagger
+from cyberspacy.processor import WindowsCommandlineProcessor
 
 @pytest.fixture(scope='function')
 def nlp():
-    return English()
+    return Language()
 
 def test_tokenizer_integration(nlp):
     tokenizer = CommandLineTokenizer(nlp.vocab)
@@ -125,8 +126,17 @@ def test_cmd_normalization(nlp):
     doc = nlp(r'"C:\Program Files\MyProgram.exe" /d "C:\Users\Alice\appdata\local\temp\file.txt --file C:\test.py"')
     doc2 = nlp(r'"C:\Program Files\MyProgram.exe" /d C:\Users\Alice\appdata\local\temp\file.txt --file C:\test.py')
     doc3 = nlp(r'C:\Windows\System32\cmd.exe /c C:\Users\Alice\appdata\local\temp\file.txt --file C:\test.py')
-    assert doc._.normalize == r'"?pf64\myprogram.exe" /d "C:\Users\Alice\appdata\local\temp\file.txt --file C:\test.py"'
+    assert doc._.normalize == r'"?pf64\myprogram.exe" /d "?usrtmp\file.txt --file ?c\test.py"'
     assert doc[2]._.sub_cmd._.normalize == r'?usrtmp\file.txt --file ?c\test.py'
     assert doc2._.normalize == r'"?pf64\myprogram.exe" /d ?usrtmp\file.txt --file ?c\test.py'
-    assert doc3._.normalize == r'?sys64\cmd.exe /c "C:\Users\Alice\appdata\local\temp\file.txt --file C:\test.py"'
+    assert doc3._.normalize == r'?sys64\cmd.exe /c "?usrtmp\file.txt --file ?c\test.py"'
     assert doc3[2]._.sub_cmd._.normalize == r'?usrtmp\file.txt --file ?c\test.py'
+
+def test_windows_commandline_processor(nlp):
+    processor = WindowsCommandlineProcessor()
+    cmd_line = r'"C:\Program Files\MyProgram.exe" /d C:\Users\Alice\file.txt --file C:\test.py'
+    assert processor.get_args(cmd_line) == ["/d", "--file"]
+    assert processor.get_paths(cmd_line) == ['"C:\\Program Files\\MyProgram.exe"', 'C:\\Users\\Alice\\file.txt', 'C:\\test.py']
+    assert processor.get_normalized_paths(cmd_line) == ['"?pf64\\myprogram.exe"', '?usr\\file.txt', '?c\\test.py']
+    assert processor.normalize(cmd_line) == '"?pf64\\myprogram.exe" /d ?usr\\file.txt --file ?c\\test.py'
+

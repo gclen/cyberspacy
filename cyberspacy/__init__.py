@@ -1,3 +1,4 @@
+from .processor import WindowsCommandlineProcessor
 from .tagger import IPTagger, EmailTagger, URLTagger, CommandLineTagger
 from .tokenizer import CommandLineTokenizer
 

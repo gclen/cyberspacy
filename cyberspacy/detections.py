@@ -8,7 +8,7 @@ from spacy.matcher import Matcher
 from spacy.symbols import ORTH, LEMMA
 
 from .expressions import ipv4_expr, url_expr, email_expr
-from .lemmatizer import get_domain, stem_ip_addr
+from .stemmer import get_domain, stem_ip_addr
 
 class IPDetector(object):
     """spaCy v2.0 pipeline component for adding IP meta data to `Doc` objects.

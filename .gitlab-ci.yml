@@ -22,11 +22,11 @@ job_deploy:
     - pip install twine
     - echo "[pypi]" >> ~/.pypirc
     - echo "repository=https://upload.pypi.org/legacy/" >> ~/.pypirc
-    - echo "username=" ${PYPI_USER} >> ~/.pypirc
-    - echo "password=" ${PYPI_PASSWORD} >> ~/.pypirc
+    - echo "username= __token__" >> ~/.pypirc
+    - echo "password= ${PYPI_API_TOKEN}" >> ~/.pypirc
     - rm -rf build dist
     - python setup.py sdist bdist_wheel
-    - twine upload dist/*
+    - twine upload --verbose dist/*
     - echo "" > ~/.pypirc && rm ~/.pypirc  # If the above fails, this won't run.
   only:
     - release

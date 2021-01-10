@@ -22,8 +22,8 @@ job_deploy:
     - pip install twine
     - echo "[pypi]" >> ~/.pypirc
     - echo "repository=https://upload.pypi.org/legacy/" >> ~/.pypirc
-    - echo "username=" ${PYPI_USER} >> ~/.pypirc
-    - echo "password=" ${PYPI_PASSWORD} >> ~/.pypirc
+    - echo "username= ${PYPI_USER}" >> ~/.pypirc
+    - echo "password= ${PYPI_PASSWORD}" >> ~/.pypirc
     - rm -rf build dist
     - python setup.py sdist bdist_wheel
     - twine upload --verbose dist/*

@@ -140,3 +140,14 @@ def test_windows_commandline_processor(nlp):
     assert processor.get_normalized_paths(cmd_line) == ['"?pf64\\myprogram.exe"', '?usr\\file.txt', '?c\\test.py']
     assert processor.normalize(cmd_line) == '"?pf64\\myprogram.exe" /d ?usr\\file.txt --file ?c\\test.py'
 
+def test_windows_commandline_processor_subcmds(nlp):
+    processor = WindowsCommandlineProcessor()
+    cmd_line = r'"C:\Program Files\MyProgram.exe" /d "C:\Users\Alice\appdata\local\temp\test.exe --file C:\test.py"'
+    assert processor.normalize(cmd_line) == r'"?pf64\myprogram.exe" /d "?usrtmp\test.exe --file ?c\test.py"'
+    assert processor.get_args(cmd_line, include_nested_commands=True) == ['/d', '--file']
+    assert processor.get_args(cmd_line, include_nested_commands=False) == ['/d']
+    assert processor.get_paths(cmd_line, include_nested_commands=True) == ['"C:\\Program Files\\MyProgram.exe"', 'C:\\Users\\Alice\\appdata\\local\\temp\\test.exe', 'C:\\test.py']
+    assert processor.get_paths(cmd_line, include_nested_commands=False) == ['"C:\\Program Files\\MyProgram.exe"']
+    assert processor.get_normalized_paths(cmd_line, include_nested_commands=True) == ['"?pf64\\myprogram.exe"', '?usrtmp\\test.exe', '?c\\test.py']
+    assert processor.get_normalized_paths(cmd_line, include_nested_commands=False) == ['"?pf64\\myprogram.exe"']    
+

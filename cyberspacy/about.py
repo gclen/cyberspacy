@@ -1,5 +1,5 @@
 __title__ = 'cyberspacy'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 __summary__ = 'spaCy pipeline component for adding cyber meta data to Doc, Token and Span objects.'
 __uri__ = 'https://github.com/gclen/cyberspacy'
 __author__ = 'Graham Clendenning'
